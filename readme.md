@@ -17,6 +17,7 @@ Debian-oids:
 2. Download this library. Just type: ```git clone https://github.com/supernlogn/3D-convolution.git```
 3. Last but not the least: on the makefile change this line: https://github.com/supernlogn/3D-convolution/blob/master/Makefile#L2
 4. Type on a terminal ```bash make ```
+
 Windows-oids:
 To be honest: no tries in windows were done. 
 But the steps would be something like this:
