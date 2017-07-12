@@ -13,10 +13,10 @@ You need to have installed the fftw3 pack for developers.
 If not its OK! A guide bellow is provided:
 
 Debian-oids:
-1. Type on a terminal ```bash sudo apt-get install libfftw3-dev```
+1. Type on a terminal ``` sudo apt-get install libfftw3-dev```
 2. Download this library. Just type: ```git clone https://github.com/supernlogn/3D-convolution.git```
 3. Last but not the least: on the makefile change this line: https://github.com/supernlogn/3D-convolution/blob/master/Makefile#L2
-4. Type on a terminal ```bash make ```
+4. Type on a terminal ``` make ```
 
 Windows-oids:
 To be honest: no tries in windows were done. 
