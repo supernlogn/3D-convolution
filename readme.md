@@ -12,6 +12,7 @@ required.
 You need to have installed the fftw3 pack for developers. 
 If not its OK! A guide bellow is provided:
 
+## How to build
 Debian-oids:
 1. Type on a terminal ``` sudo apt-get install libfftw3-dev```
 2. Download this library. Just type: ```git clone https://github.com/supernlogn/3D-convolution.git```
