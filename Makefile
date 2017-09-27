@@ -22,5 +22,8 @@ conv3d.so: $(LIBRARY_SRC)
 example.bin: $(EXAMPLE_SRC)
 	$(CC) $(FLAGS) $(LIBRARY_SRC) $(EXAMPLE_SRC) -o example.bin $(LIBS)
 
+run_example: example.bin
+	./example.bin
+
 clean:
 	rm -f example.bin conv3d.so

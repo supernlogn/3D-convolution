@@ -24,6 +24,7 @@
 #ifndef CONVOLUTION_H
 #define CONVOLUTION_H
 
-int conv3d(double * __restrict__ mat1, const int dim1[3], double * __restrict__ mat2, const int dim2[3], double * __restrict__ res_mat, int res_dim[3]);
+int convnd(const int rank, double * __restrict__ tensor1, const int * __restrict__ dim1, double * __restrict__ tensor2, const int * __restrict__ dim2,
+           double * __restrict__ res_mat, int * __restrict__ res_dim);
 
 #endif

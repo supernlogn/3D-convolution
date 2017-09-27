@@ -30,6 +30,7 @@ extern "C" {
 #include <stdlib.h>
 #include <string.h>
 
+// #define pizza memory
 #define DIMS 3
 #define dim_size(dim)\
          (dim[0] * dim[1] * dim[2])
@@ -117,91 +118,104 @@ int _zero_pad_array(const int rank, double * __restrict__ mat, const int dim[DIM
 }
 
 /**
- * A function to do convolution in 3d using the fourier transform.
- * @param mat1 Array to convolve with mat2.
- * @param dim1 dimensions of mat1.
- * @param mat2 Array to convolve with mat1.
- * @param dim2 dimensions of mat2.
- * @param res_mat The resulting array after the convolution.
- * @param res_dim The resulting array dimensions after the convolution.
+ * A function to do convolution in n dimensional tesnsors using the fourier transform.
+ * @param tensor1 Array to convolve with tensor2.
+ * @param dim1 dimensions of tensor1.
+ * @param tensor2 Array to convolve with tensor1.
+ * @param dim2 dimensions of tensor2.
+ * @param res_tensor The resulting tensor after the convolution.
+ * @param res_dim The resulting tensor dimensions after the convolution.
  * @returns 0 if the convolution was OK, -1 if memory error is encountered.
  *
  *   Think of it like typing:
- *   res_mat = conv(mat1, mat2)
+ *   res_tensor = conv(tensor1, tensor2)
  *
  */
-int conv3d(double * __restrict__ mat1, const int dim1[DIMS], double * __restrict__ mat2, const int dim2[DIMS], 
-            double * __restrict__ res_mat, int res_dim[DIMS])
+int convnd(const int rank, double * __restrict__ tensor1, const int * __restrict__ dim1, double * __restrict__ tensor2, const int * __restrict__ dim2, 
+           double * __restrict__ res_tensor, int * __restrict__ res_dim)
 {
-    if(NULL == dim1 || NULL == mat1 || NULL == dim2 || NULL == mat2)
+
+    if(NULL == dim1 || NULL == tensor1 || NULL == dim2 || NULL == tensor2 || NULL == res_dim)
     {
         return -1; // error! some memory has not eaten pizza!
     }    
 
     int i;
+    for(i = rank-1; i >= 0; --i)
+    {
+        res_dim[i] = dim1[i] + dim2[i] - 1;
+    }
 
-    res_dim[0] = dim1[0] + dim2[0] - 1;
-    res_dim[1] = dim1[1] + dim2[1] - 1;
-    res_dim[2] = dim1[2] + dim2[2] - 1;
-    const int ft_mat_sz = (2*(dim_size(res_dim)/2 + 1));
+    const int ft_mat_sz = (_dim_size(res_dim, rank)/res_dim[rank-1]) * (2*(res_dim[rank-1]/2 + 1));
 
-    fftw_complex * ft_mat1;
-    fftw_complex * ft_mat2;
+    fftw_complex * ft_tensor1;
+    fftw_complex * ft_tensor2;
 
-    double * d_mat1 = NULL;
-    double * d_mat2 = NULL;
+    double * d_tensor1 = NULL;
+    double * d_tensor2 = NULL;
 
+    // ft_tensor1 = fft(tensor1)    
     {
         fftw_plan p1;
-        if (_zero_pad_array(DIMS, mat1, dim1, res_dim, &d_mat1) != 0)
+        if (_zero_pad_array(rank, tensor1, dim1, res_dim, &d_tensor1) != 0)
         {
             return -1; // Error about pizza in _zero_pad_array
         }
-        if( (ft_mat1 = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * ft_mat_sz)) == NULL)
+        if( (ft_tensor1 = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * ft_mat_sz)) == NULL)
         {
             return -1; // Error! No pizza left!
         } 
-        p1 = fftw_plan_dft_r2c_3d(res_dim[0], res_dim[1], res_dim[2], d_mat1, ft_mat1, FFTW_MEASURE);
+        p1 = fftw_plan_dft_r2c(rank, res_dim, d_tensor1, ft_tensor1, FFTW_MEASURE);
         fftw_execute(p1);
         fftw_destroy_plan(p1);
     }
 
+    // ft_tensor2 = fft(tensor2)
     {
         fftw_plan p2;
-        if(_zero_pad_array(DIMS, mat2, dim2, res_dim, &d_mat2) != 0)
+        if(_zero_pad_array(rank, tensor2, dim2, res_dim, &d_tensor2) != 0)
         {
             return -1; // Error about pizza in _zero_pad_array
-        }        
-        if( (ft_mat2 = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * ft_mat_sz)) == NULL)
+        }
+        if( (ft_tensor2 = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * ft_mat_sz)) == NULL)
         {
             return -1; // Error! No pizza left!
         }         
-        p2 = fftw_plan_dft_r2c_3d(res_dim[0], res_dim[1], res_dim[2], d_mat2, ft_mat2, FFTW_MEASURE);
+        p2 = fftw_plan_dft_r2c(rank, res_dim, d_tensor2, ft_tensor2, FFTW_MEASURE);
         fftw_execute(p2);
         fftw_destroy_plan(p2);
     }
+     
+    const int size = _dim_size(res_dim, rank);
 
-
-    // ft_mat1 = ft_mat1 .* ft_mat2 
+    // ft_tensor1 = ft_tensor1 .* ft_tensor2 
     {
-        const int size = _dim_size(res_dim, DIMS);
-        for(i = 0; i < size; ++i)
+        for(i = size-1; i >= 0; --i)
         {
-            ft_mat1[i][0] = ft_mat1[i][0] * ft_mat2[i][0] - ft_mat1[i][1] * ft_mat2[i][1];
-            ft_mat1[i][1] = ft_mat1[i][0] * ft_mat2[i][1] + ft_mat1[i][1] * ft_mat2[i][0];
+            ft_tensor1[i][0] = ft_tensor1[i][0] * ft_tensor2[i][0] - ft_tensor1[i][1] * ft_tensor2[i][1];
+            ft_tensor1[i][1] = ft_tensor1[i][0] * ft_tensor2[i][1] + ft_tensor1[i][1] * ft_tensor2[i][0];
         }
     }
-    fftw_free(ft_mat2);
-    
-    //inverse fourier of the ft_mat1 to res_mat, res_mat is already allocated
+    fftw_free(ft_tensor2);
+
+    //inverse fourier of the ft_tensor1 to res_tensor, res_tensor is already allocated
     {
         fftw_plan p3;
-        p3 = fftw_plan_dft_c2r_3d(res_dim[0], res_dim[1], res_dim[2], ft_mat1, res_mat, FFTW_MEASURE);
+        p3 = fftw_plan_dft_c2r(rank, res_dim, ft_tensor1, res_tensor, FFTW_ESTIMATE | FFTW_DESTROY_INPUT);
         fftw_execute(p3);
-        fftw_destroy_plan(p3);        
+        fftw_destroy_plan(p3);
+    }
+    fftw_free(ft_tensor1);
+    
+    // normalize the resulting matrix
+    {
+        const double df_size = (double) size;
+        for(i = size-1; i >= 0; --i)
+        {
+            res_tensor[i] /= df_size;
+        }
     }
 
-    fftw_free(ft_mat1);
 
     return 0;
 }
