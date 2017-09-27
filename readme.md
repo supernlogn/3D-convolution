@@ -2,7 +2,7 @@
 
 ## Introduction
 Searched all over and did'n find it. So here it is:
-A library for doing 3D convolution in C/C++ without using any
+A library for doing n-Dimensional convolution in C/C++ without using any
 special structures or frameworks. It uses fourier transform in order to
 be fast and simple to understand. So it has only one minimum requirement the **fftw3** library.
 It is also no `malloc` free, so stdlib.h or another library with memory allocation is
@@ -27,6 +27,3 @@ But the steps would be something like this:
 2. Download this library. Just type: ```git clone https://github.com/supernlogn/3D-convolution.git```
 3. Note: The makefile is for unix systems... (sorry) 
    You have to use an IDE or write your own makefile
-
-## The future
-n-dimensional convolution will soon be supported.
