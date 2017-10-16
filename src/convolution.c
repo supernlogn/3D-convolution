@@ -67,7 +67,7 @@ static int _dim_size(const int * __restrict__ dim_array, const int rank)
  *
  * @Note No input is destroyed or overwritten.
  *
- * @returns 0 if succeded and -1 if memory problems are encountered.
+ * @returns 0 if succeeded and -1 if memory problems are encountered.
  */
 int _zero_pad_array(const int rank, double * __restrict__ mat, const int dim[DIMS], const int d_dim[DIMS], double ** d_mat)
 {
@@ -118,7 +118,7 @@ int _zero_pad_array(const int rank, double * __restrict__ mat, const int dim[DIM
 }
 
 /**
- * A function to do convolution in n dimensional tesnsors using the fourier transform.
+ * A function to do convolution in n dimensional tensors using the fourier transform.
  * @param tensor1 Array to convolve with tensor2.
  * @param dim1 dimensions of tensor1.
  * @param tensor2 Array to convolve with tensor1.
