@@ -63,6 +63,7 @@ static int _dim_size(const int * __restrict__ dim_array, const int rank)
  * @param rank Whether the array is 1D,2D,3D,...
  * @param mat The array data in the order described by the fftw3 site.
  * @param dim The dimensions of the array.
+ * @param d_dim The resulting tensor dimensions after padding
  * @param d_mat The resulting array.
  *
  * @Note No input is destroyed or overwritten.
