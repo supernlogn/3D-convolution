@@ -12,7 +12,7 @@ FLAGS += -Wall
 CC = gcc
 
 LIBRARY_SRC = src/convolution.c
-EXAMPLE_SRC = conv_example.c
+EXAMPLE_SRC = examples/conv_example.c
 
 all: example.bin conv3d.so
 
