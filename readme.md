@@ -17,7 +17,8 @@ Debian-oids:
 1. Type on a terminal ``` sudo apt-get install libfftw3-dev```
 2. Download this library. Just type: ```git clone https://github.com/supernlogn/3D-convolution.git```
 3. Last but not the least: on the makefile change this line: https://github.com/supernlogn/3D-convolution/blob/master/Makefile#L2
-4. Type on a terminal ``` make ```
+4. Type on a terminal ``` mkdir build; cd build; ```
+5. Then ```cmake ..; make```
 
 Windows-oids:
 To be honest: no tries in windows were done. 
