@@ -79,33 +79,34 @@ int _zero_pad_array(const int rank, double * __restrict__ mat, const int dim[], 
         return -1; // Error! No pizza left!
     }
 
-
-    int it1 = 0;
-    int it2 = 0;
-    int j = 0;
-    const int it1_step = d_dim[rank-1];
-    const int it2_step = dim[rank-1];
-    
-    for(it1 = 0; it1 < (dim[0] * d_size / d_dim[0]); it1 += it1_step, it2 += it2_step)
+    int * iterators = (int*) calloc(rank, sizeof(int));
+    int total_num_els = _dim_size(d_dim, rank);
+    int in_zero_area = 0;
+    int numels_orig = 0;
+    for (int numels = 0; numels < total_num_els; ++numels)
     {
-        if(it2 != 0)
+        in_zero_area = 0;
+        for(int i = 0; i < rank; ++i) {
+            in_zero_area |= (iterators[i] >= dim[i]);
+        }
+        if (0 == in_zero_area) {
+            (*d_mat)[numels] = mat[numels_orig];
+            ++numels_orig;
+        }
+        for(int i = rank-1; i >= 0; --i)
         {
-            int prod = (size / dim[0]);
-            int d_prod = (d_size / d_dim[0]);
-
-            for(j = 1; j < rank; ++j)
+            iterators[i] += 1;
+            if (iterators[i] < d_dim[i])
             {
-                prod /= dim[j];
-                d_prod /= d_dim[j];
-                if(it2 % (prod) == 0)
-                {
-                    it1 = ((it1 / d_prod ) + 1) * d_prod;
-                    break;
-                }
+              break;
+            } else {
+              iterators[i] = 0;
             }
         }
-        memcpy(&_d_mat[it1], &mat[it2], sizeof(double) * dim[rank-1]);
     }
+    free(iterators);
+
+
 
     return 0;
 }
@@ -158,7 +159,7 @@ int convnd(const int rank, double * __restrict__ tensor1, const int * __restrict
         {
             return -1; // Error! No pizza left!
         } 
-        p1 = fftw_plan_dft_r2c(rank, res_dim, d_tensor1, ft_tensor1, FFTW_MEASURE);
+        p1 = fftw_plan_dft_r2c(rank, res_dim, d_tensor1, ft_tensor1, FFTW_ESTIMATE);
         fftw_execute(p1);
         fftw_destroy_plan(p1);
     }
@@ -174,7 +175,7 @@ int convnd(const int rank, double * __restrict__ tensor1, const int * __restrict
         {
             return -1; // Error! No pizza left!
         }         
-        p2 = fftw_plan_dft_r2c(rank, res_dim, d_tensor2, ft_tensor2, FFTW_MEASURE);
+        p2 = fftw_plan_dft_r2c(rank, res_dim, d_tensor2, ft_tensor2, FFTW_ESTIMATE);
         fftw_execute(p2);
         fftw_destroy_plan(p2);
     }
