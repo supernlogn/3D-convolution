@@ -26,19 +26,11 @@ extern "C" {
 #endif
 
 #include "convolution.h"
+#include "private.h"
 #include <fftw3.h> // the fftw library
 #include <stdlib.h>
 #include <string.h>
 
-// #define pizza memory
-#define DIMS 3
-#define dim_size(dim)\
-         (dim[0] * dim[1] * dim[2])
-
-#define prod_size(dim, n)\
-        (dim[0] * dim[1] * dim[2])
-
-int _zero_pad_array(const int rank, double * __restrict__ mat, const int dim[DIMS], const int d_dim[DIMS], double ** d_mat);
 
 /*
  * A private function to get the number of elements in an array with dimensions described by dim_array.
@@ -46,11 +38,11 @@ int _zero_pad_array(const int rank, double * __restrict__ mat, const int dim[DIM
  * @param rank Whether the array is 1D,2D,3D,...
  * @returns The number of elements in an array with dimensions described by dim_array.
  */
-static int _dim_size(const int * __restrict__ dim_array, const int rank)
+int _dim_size(const int * __restrict__ dim_array, const int rank)
 {
     int i;
     int res = 1;
-    for(i = rank - 1; i >= 0; --i)
+    for(i = 0; i < rank; ++i)
     {
         res *= dim_array[i];
     }
@@ -70,7 +62,7 @@ static int _dim_size(const int * __restrict__ dim_array, const int rank)
  *
  * @returns 0 if succeeded and -1 if memory problems are encountered.
  */
-int _zero_pad_array(const int rank, double * __restrict__ mat, const int dim[DIMS], const int d_dim[DIMS], double ** d_mat)
+int _zero_pad_array(const int rank, double * __restrict__ mat, const int dim[], const int d_dim[], double ** d_mat)
 {
     const int d_size = _dim_size(d_dim, rank);
     const int size = _dim_size(dim, rank);
