@@ -57,13 +57,12 @@ int main(void)
 
     const int mat1_size = tensor_size(dim1, DIMS);
     const int mat2_size = tensor_size(dim2, DIMS);
-    const int res_size = (dim1[0] + dim2[0] - 1) *
-                         (dim1[1] + dim2[1] - 1) *
-                         (dim1[2] + dim2[2] - 1);
+    const int res_size =
+        (dim1[0] + dim2[0] - 1) * (dim1[1] + dim2[1] - 1) * (dim1[2] + dim2[2] - 1);
 
-    double *mat1 = (double *)malloc((size_t)mat1_size * sizeof(double));
-    double *mat2 = (double *)malloc((size_t)mat2_size * sizeof(double));
-    double *res_mat = (double *)malloc((size_t)res_size * sizeof(double));
+    double *mat1 = (double *) malloc((size_t) mat1_size * sizeof(double));
+    double *mat2 = (double *) malloc((size_t) mat2_size * sizeof(double));
+    double *res_mat = (double *) malloc((size_t) res_size * sizeof(double));
 
     if (mat1 == NULL || mat2 == NULL || res_mat == NULL)
     {

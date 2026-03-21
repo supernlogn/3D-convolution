@@ -5,14 +5,14 @@
 #include <stdlib.h>
 
 #define INPUT_RANK 3
-#define INPUT_D0 8
-#define INPUT_D1 8
-#define INPUT_D2 3
+#define INPUT_D0   8
+#define INPUT_D1   8
+#define INPUT_D2   3
 
 #define FILTER_RANK 3
-#define FILTER_D0 3
-#define FILTER_D1 3
-#define FILTER_D2 3
+#define FILTER_D0   3
+#define FILTER_D1   3
+#define FILTER_D2   3
 
 static int tensor_size(const int dims[], const int rank)
 {
@@ -82,12 +82,8 @@ static void print_tensor_stats(const char *label, const double *values, const in
 
     const double mean = sum / length;
 
-    printf("%-20s | Size: %8d | Min: %8.4f | Max: %8.4f | Mean: %8.4f\n",
-           label,
-           length,
-           min_val,
-           max_val,
-           mean);
+    printf("%-20s | Size: %8d | Min: %8.4f | Max: %8.4f | Mean: %8.4f\n", label, length, min_val,
+           max_val, mean);
 }
 
 int main(void)
@@ -107,13 +103,12 @@ int main(void)
 
     const int input_size = tensor_size(input_dim, INPUT_RANK);
     const int filter_size = tensor_size(filter_dim, FILTER_RANK);
-    const int output_size = (INPUT_D0 + FILTER_D0 - 1) * 
-                            (INPUT_D1 + FILTER_D1 - 1) * 
-                            (INPUT_D2 + FILTER_D2 - 1);
+    const int output_size =
+        (INPUT_D0 + FILTER_D0 - 1) * (INPUT_D1 + FILTER_D1 - 1) * (INPUT_D2 + FILTER_D2 - 1);
 
-    double *input = (double *)malloc((size_t)input_size * sizeof(double));
-    double *filter = (double *)malloc((size_t)filter_size * sizeof(double));
-    double *output = (double *)malloc((size_t)output_size * sizeof(double));
+    double *input = (double *) malloc((size_t) input_size * sizeof(double));
+    double *filter = (double *) malloc((size_t) filter_size * sizeof(double));
+    double *output = (double *) malloc((size_t) output_size * sizeof(double));
 
     if (input == NULL || filter == NULL || output == NULL)
     {

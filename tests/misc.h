@@ -3,10 +3,10 @@
 
 void fill_mat(double *mat, const int length, const double val)
 {
-  for (int i = 0; i < length; ++i)
-  {
-    mat[i] = val;
-  }
+    for (int i = 0; i < length; ++i)
+    {
+        mat[i] = val;
+    }
 }
 
-#endif // TESTS_MISC_H
+#endif  // TESTS_MISC_H
