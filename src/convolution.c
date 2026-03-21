@@ -140,7 +140,7 @@ int convnd(const int rank, double * __restrict__ tensor1, const int * __restrict
         res_dim[i] = dim1[i] + dim2[i] - 1;
     }
 
-    const int ft_mat_sz = (_dim_size(res_dim, rank)/res_dim[rank-1]) * (2*(res_dim[rank-1]/2 + 1));
+    const int ft_complex_sz = (_dim_size(res_dim, rank) / res_dim[rank-1]) * (res_dim[rank-1] / 2 + 1);
 
     fftw_complex * ft_tensor1;
     fftw_complex * ft_tensor2;
@@ -155,7 +155,7 @@ int convnd(const int rank, double * __restrict__ tensor1, const int * __restrict
         {
             return -1; // Error about pizza in _zero_pad_array
         }
-        if( (ft_tensor1 = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * ft_mat_sz)) == NULL)
+        if( (ft_tensor1 = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * ft_complex_sz)) == NULL)
         {
             return -1; // Error! No pizza left!
         } 
@@ -171,7 +171,7 @@ int convnd(const int rank, double * __restrict__ tensor1, const int * __restrict
         {
             return -1; // Error about pizza in _zero_pad_array
         }
-        if( (ft_tensor2 = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * ft_mat_sz)) == NULL)
+        if( (ft_tensor2 = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * ft_complex_sz)) == NULL)
         {
             return -1; // Error! No pizza left!
         }         
@@ -184,13 +184,20 @@ int convnd(const int rank, double * __restrict__ tensor1, const int * __restrict
 
     // ft_tensor1 = ft_tensor1 .* ft_tensor2 
     {
-        for(i = size-1; i >= 0; --i)
+        for(i = ft_complex_sz-1; i >= 0; --i)
         {
-            ft_tensor1[i][0] = ft_tensor1[i][0] * ft_tensor2[i][0] - ft_tensor1[i][1] * ft_tensor2[i][1];
-            ft_tensor1[i][1] = ft_tensor1[i][0] * ft_tensor2[i][1] + ft_tensor1[i][1] * ft_tensor2[i][0];
+            const double real1 = ft_tensor1[i][0];
+            const double imag1 = ft_tensor1[i][1];
+            const double real2 = ft_tensor2[i][0];
+            const double imag2 = ft_tensor2[i][1];
+
+            ft_tensor1[i][0] = real1 * real2 - imag1 * imag2;
+            ft_tensor1[i][1] = real1 * imag2 + imag1 * real2;
         }
     }
     fftw_free(ft_tensor2);
+    free(d_tensor1);
+    free(d_tensor2);
 
     //inverse fourier of the ft_tensor1 to res_tensor, res_tensor is already allocated
     {

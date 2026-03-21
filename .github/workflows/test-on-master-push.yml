@@ -1,0 +1,29 @@
+name: Test on master push
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libfftw3-dev
+
+      - name: Configure
+        run: cmake -S . -B build-ci
+
+      - name: Build
+        run: cmake --build build-ci --parallel
+
+      - name: Run tests
+        run: ctest --test-dir build-ci --output-on-failure

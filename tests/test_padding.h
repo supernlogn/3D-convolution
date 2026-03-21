@@ -1,15 +1,10 @@
+#ifndef TESTS_TEST_PADDING_H
+#define TESTS_TEST_PADDING_H
 #include <stdlib.h>
 #include <stdio.h>
 #include "private.h"
-
+#include "misc.h"
 // Test the zero padding
-void fill_mat(double *mat, const int length, const double val)
-{
-  for (int i = 0; i < length; ++i)
-  {
-    mat[i] = val;
-  }
-}
 
 void print_mat(const int rank, const double *mat, const int dims[])
 {
@@ -42,7 +37,7 @@ void print_mat(const int rank, const double *mat, const int dims[])
   free(iterators);
 }
 
-void test1(const int add_to_N0, const int add_to_N1)
+void test_padding(const int add_to_N0, const int add_to_N1)
 {
   int rank = 2;
   int DIMS = 2;
@@ -58,9 +53,4 @@ void test1(const int add_to_N0, const int add_to_N1)
   print_mat(rank, final_mat, res_dim);
 }
 
-void main(int argc, char *argv[])
-{
-  test1(4, 3);
-
-  return;
-}
+#endif  // TESTS_TEST_PADDING_H
