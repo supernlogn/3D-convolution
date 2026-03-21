@@ -24,8 +24,31 @@
 #ifndef CONVOLUTION_H
 #define CONVOLUTION_H
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 int convnd(const int rank, double *__restrict__ tensor1, const int *__restrict__ dim1,
            double *__restrict__ tensor2, const int *__restrict__ dim2, double *__restrict__ res_mat,
            int *__restrict__ res_dim);
+
+typedef struct convnd_plan convnd_plan;
+
+convnd_plan *convnd_plan_create(const int rank, const int *__restrict__ dim1,
+                                const int *__restrict__ dim2, int *__restrict__ res_dim);
+
+int convnd_plan_execute(convnd_plan *plan, double *__restrict__ tensor1,
+                        double *__restrict__ tensor2, double *__restrict__ res_tensor);
+
+int convnd_plan_get_result_dim(const convnd_plan *plan, int *__restrict__ res_dim);
+
+int convnd_plan_result_size(const convnd_plan *plan);
+
+void convnd_plan_destroy(convnd_plan *plan);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

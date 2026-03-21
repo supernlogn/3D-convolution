@@ -109,6 +109,10 @@ if(CONVOLUTION_BUILD_EXAMPLE)
 	add_executable(${PROJECT_NAME}_cnn_inference examples/conv_cnn_inference.c)
 	target_include_directories(${PROJECT_NAME}_cnn_inference PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 	target_link_libraries(${PROJECT_NAME}_cnn_inference PRIVATE Convolution::conv m)
+
+	add_executable(${PROJECT_NAME}_plan_timing examples/conv_plan_timing.c)
+	target_include_directories(${PROJECT_NAME}_plan_timing PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+	target_link_libraries(${PROJECT_NAME}_plan_timing PRIVATE Convolution::conv m)
 endif()
 
 if(BUILD_TESTING)
@@ -130,6 +134,7 @@ if(BUILD_TESTING)
 		rank5_identity_kernel
 		rank3_large_deterministic
 		rank4_large_deterministic
+		plan_reuse
 	)
 
 	foreach(case_name IN LISTS convolution_test_cases)

@@ -23,6 +23,40 @@ Debian-oids:
 
 ## Examples
 
+### Plan once, execute many times
+
+If you want FFTW-like behavior, use the planning API instead of calling `convnd()` repeatedly.
+
+```c
+#include "convolution.h"
+
+int rank = 3;
+int dim1[] = {32, 32, 32};
+int dim2[] = {5, 5, 5};
+int result_dims[3];
+
+convnd_plan *plan = convnd_plan_create(rank, dim1, dim2, result_dims);
+if (plan == NULL)
+{
+  /* handle allocation/planning failure */
+}
+
+int result_size = convnd_plan_result_size(plan);
+double *result = malloc((size_t) result_size * sizeof(double));
+
+/* execute as many times as needed with tensors that match planned dims */
+convnd_plan_execute(plan, tensor1_a, tensor2_a, result);
+convnd_plan_execute(plan, tensor1_b, tensor2_b, result);
+
+convnd_plan_destroy(plan);
+free(result);
+```
+
+Notes:
+- `convnd()` is unchanged and still available.
+- A plan is valid for one rank and one pair of input shapes.
+- `convnd_plan_execute()` requires tensors with the same dimensions used at planning time.
+
 The library includes example programs demonstrating its usage:
 
 - **Convolution_example**: Basic usage of the `convnd()` function showing how to allocate tensors, perform convolution, and inspect results.
@@ -33,6 +67,15 @@ The library includes example programs demonstrating its usage:
 - **Convolution_cnn_inference**: Demonstrates a complete CNN-style inference pipeline combining convolution, bias addition, and ReLU activation with layer-by-layer statistics tracking.
   ```bash
   ./build/Convolution_cnn_inference
+  ```
+
+- **Convolution_plan_timing**: Benchmarks repeated direct `convnd()` calls versus planned execution (`convnd_plan_create()` + repeated `convnd_plan_execute()`), including per-iteration timing and final output-difference check.
+  ```bash
+  ./build/Convolution_plan_timing
+  ```
+  Custom profiling run:
+  ```bash
+  ./build/Convolution_plan_timing --iterations 300 --tensor 48,48,32 --kernel 7,7,5
   ```
 
 Both examples use automatically initialized test data and display tensor statistics (min, max, mean) to verify correctness.

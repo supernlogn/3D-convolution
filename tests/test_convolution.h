@@ -305,6 +305,168 @@ static int test_convnd_rank4_large_deterministic(void)
     return run_convnd_case("rank4 larger deterministic", rank, dim1, tensor1, dim2, tensor2);
 }
 
+static int test_convnd_plan_reuse(void)
+{
+    const int rank = 3;
+    const int dim1[] = {3, 2, 2};
+    const int dim2[] = {2, 1, 3};
+    int expected_dims[8] = {0};
+    int direct_dims[8] = {0};
+    int planned_dims[8] = {0};
+    int plan_dims[8] = {0};
+    double tensor1_a[12];
+    double tensor2_a[6];
+    double tensor1_b[12];
+    double tensor2_b[6];
+
+    for (int i = 0; i < rank; ++i)
+    {
+        expected_dims[i] = dim1[i] + dim2[i] - 1;
+    }
+
+    fill_deterministic_values(tensor1_a, 12, 42u);
+    fill_deterministic_values(tensor2_a, 6, 77u);
+    fill_deterministic_values(tensor1_b, 12, 204u);
+    fill_deterministic_values(tensor2_b, 6, 509u);
+
+    convnd_plan *plan = convnd_plan_create(rank, dim1, dim2, plan_dims);
+    if (plan == NULL)
+    {
+        printf("[FAIL] plan reuse: plan creation failed\n");
+        return 1;
+    }
+
+    for (int i = 0; i < rank; ++i)
+    {
+        if (plan_dims[i] != expected_dims[i])
+        {
+            printf("[FAIL] plan reuse: wrong planned dimension at axis %d: expected %d got %d\n", i,
+                   expected_dims[i], plan_dims[i]);
+            convnd_plan_destroy(plan);
+            return 1;
+        }
+    }
+
+    if (convnd_plan_get_result_dim(plan, plan_dims) != 0)
+    {
+        printf("[FAIL] plan reuse: convnd_plan_get_result_dim failed\n");
+        convnd_plan_destroy(plan);
+        return 1;
+    }
+
+    for (int i = 0; i < rank; ++i)
+    {
+        if (plan_dims[i] != expected_dims[i])
+        {
+            printf("[FAIL] plan reuse: wrong reported dimension at axis %d: expected %d got %d\n",
+                   i, expected_dims[i], plan_dims[i]);
+            convnd_plan_destroy(plan);
+            return 1;
+        }
+    }
+
+    const int result_size = convnd_plan_result_size(plan);
+    if (result_size <= 0)
+    {
+        printf("[FAIL] plan reuse: invalid planned result size %d\n", result_size);
+        convnd_plan_destroy(plan);
+        return 1;
+    }
+
+    double *direct_a = (double *) calloc((size_t) result_size, sizeof(double));
+    double *planned_a = (double *) calloc((size_t) result_size, sizeof(double));
+    double *direct_b = (double *) calloc((size_t) result_size, sizeof(double));
+    double *planned_b = (double *) calloc((size_t) result_size, sizeof(double));
+
+    if (direct_a == NULL || planned_a == NULL || direct_b == NULL || planned_b == NULL)
+    {
+        printf("[FAIL] plan reuse: output allocation failed\n");
+        free(direct_a);
+        free(planned_a);
+        free(direct_b);
+        free(planned_b);
+        convnd_plan_destroy(plan);
+        return 1;
+    }
+
+    if (convnd(rank, tensor1_a, dim1, tensor2_a, dim2, direct_a, direct_dims) != 0)
+    {
+        printf("[FAIL] plan reuse: direct convnd failed on first execution\n");
+        free(direct_a);
+        free(planned_a);
+        free(direct_b);
+        free(planned_b);
+        convnd_plan_destroy(plan);
+        return 1;
+    }
+
+    if (convnd_plan_execute(plan, tensor1_a, tensor2_a, planned_a) != 0)
+    {
+        printf("[FAIL] plan reuse: plan execution failed on first execution\n");
+        free(direct_a);
+        free(planned_a);
+        free(direct_b);
+        free(planned_b);
+        convnd_plan_destroy(plan);
+        return 1;
+    }
+
+    if (convnd(rank, tensor1_b, dim1, tensor2_b, dim2, direct_b, planned_dims) != 0)
+    {
+        printf("[FAIL] plan reuse: direct convnd failed on second execution\n");
+        free(direct_a);
+        free(planned_a);
+        free(direct_b);
+        free(planned_b);
+        convnd_plan_destroy(plan);
+        return 1;
+    }
+
+    if (convnd_plan_execute(plan, tensor1_b, tensor2_b, planned_b) != 0)
+    {
+        printf("[FAIL] plan reuse: plan execution failed on second execution\n");
+        free(direct_a);
+        free(planned_a);
+        free(direct_b);
+        free(planned_b);
+        convnd_plan_destroy(plan);
+        return 1;
+    }
+
+    int mismatch = compare_double_arrays(direct_a, planned_a, result_size, 1e-8);
+    if (mismatch != 0)
+    {
+        printf("[FAIL] plan reuse: mismatch on first execution at index %d\n", mismatch - 1);
+        free(direct_a);
+        free(planned_a);
+        free(direct_b);
+        free(planned_b);
+        convnd_plan_destroy(plan);
+        return 1;
+    }
+
+    mismatch = compare_double_arrays(direct_b, planned_b, result_size, 1e-8);
+    if (mismatch != 0)
+    {
+        printf("[FAIL] plan reuse: mismatch on second execution at index %d\n", mismatch - 1);
+        free(direct_a);
+        free(planned_a);
+        free(direct_b);
+        free(planned_b);
+        convnd_plan_destroy(plan);
+        return 1;
+    }
+
+    printf("[PASS] plan create/execute reuse\n");
+
+    free(direct_a);
+    free(planned_a);
+    free(direct_b);
+    free(planned_b);
+    convnd_plan_destroy(plan);
+    return 0;
+}
+
 typedef int (*convnd_test_fn)(void);
 
 typedef struct
@@ -323,7 +485,8 @@ static const convnd_named_test CONVND_TESTS[] = {
     {"rank4_identity_kernel", test_convnd_rank4_identity_kernel},
     {"rank5_identity_kernel", test_convnd_rank5_identity_kernel},
     {"rank3_large_deterministic", test_convnd_rank3_large_deterministic},
-    {"rank4_large_deterministic", test_convnd_rank4_large_deterministic}};
+    {"rank4_large_deterministic", test_convnd_rank4_large_deterministic},
+    {"plan_reuse", test_convnd_plan_reuse}};
 
 static int convnd_test_count(void)
 {
